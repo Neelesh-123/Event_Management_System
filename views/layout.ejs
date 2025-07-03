@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Event Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Event Dashboard</h1>
+    <a href="/add">➕ Add New Event</a>
+    <table>
+      <tr>
+        <th>Image</th>
+        <th>Name</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Location</th>
+        <th>Actions</th>
+      </tr>
+      <% events.forEach(event => { %>
+        <tr>
+          <td>
+            <% if (event.image) { %>
+              <img src="/uploads/<%= event.image %>" width="100" height="80" />
+            <% } else { %>
+              No image
+            <% } %>
+          </td>
+          <td><%= event.name %></td>
+          <td><%= event.date %></td>
+          <td><%= event.time %></td>
+          <td><%= event.location %></td>
+          <td><a href="/delete/<%= event._id %>">🗑 Delete</a></td>
+        </tr>
+      <% }); %>
+    </table>
+  </div>
+</body>
+</html>

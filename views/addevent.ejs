@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Event</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Add New Event</h1>
+    <form action="/add" method="POST" enctype="multipart/form-data">
+      <input type="text" name="name" placeholder="Event Name" required />
+      <input type="text" name="date" placeholder="Date (YYYY-MM-DD)" required />
+      <input type="text" name="time" placeholder="Time" required />
+      <input type="text" name="location" placeholder="Location" required />
+      <textarea name="description" placeholder="Description (optional)"></textarea>
+      <input type="file" name="image" accept="image/*" />
+      <button type="submit">Add Event</button>
+    </form>
+    <br />
+    <a href="/">⬅ Back to Dashboard</a>
+  </div>
+</body>
+</html>

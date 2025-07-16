@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Event Hub - Welcome</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .landing-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3498db, #2c3e50);
+    }
+
+    .landing-card {
+      background: white;
+      padding: 3rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .landing-header {
+      margin-bottom: 3rem;
+    }
+
+    .landing-header h1 {
+      color: #2c3e50;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .landing-header p {
+      color: #7f8c8d;
+      font-size: 1.1rem;
+    }
+
+    .auth-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .auth-option {
+      padding: 2rem;
+      border-radius: 8px;
+      background: #f8fafc;
+      transition: all 0.3s ease;
+    }
+
+    .auth-option:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .auth-option h2 {
+      color: #2c3e50;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    .auth-option p {
+      color: #64748b;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .auth-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+
+    .btn-login {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .btn-login:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-register {
+      background-color: #e2e8f0;
+      color: #2c3e50;
+    }
+
+    .btn-register:hover {
+      background-color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-container">
+    <div class="landing-card">
+      <div class="landing-header">
+        <h1>Welcome to Event Hub</h1>
+        <p>Choose your account type to get started</p>
+      </div>
+
+      <div class="auth-options">
+        <div class="auth-option">
+          <h2>User Account</h2>
+          <p>Browse and register for events, manage your bookings, and stay updated with event notifications.</p>
+          <div class="btn-group">
+            <a href="/login?type=user" class="auth-btn btn-login">Sign In</a>
+            <a href="/register?type=user" class="auth-btn btn-register">Create Account</a>
+          </div>
+        </div>
+
+        <div class="auth-option">
+          <h2>Admin Account</h2>
+          <p>Create and manage events, handle registrations, and oversee all event operations.</p>
+          <div class="btn-group">
+            <a href="/login?type=admin" class="auth-btn btn-login">Sign In</a>
+            <a href="/register?type=admin" class="auth-btn btn-register">Create Account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

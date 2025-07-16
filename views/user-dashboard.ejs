@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="dashboard-nav">
+      <h1>Event Dashboard</h1>
+      <div class="user-info">
+        <div class="notification-bell" onclick="toggleNotifications()">
+          🔔 <span class="notification-count"><%= unreadNotifications.length %></span>
+        </div>
+        <span>Welcome, <%= user.username %></span>
+        <a href="/logout" class="logout-btn">Logout</a>
+      </div>
+    </nav>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel" style="display: none;">
+      <h3>Notifications</h3>
+      <% if (notifications.length === 0) { %>
+        <p class="no-notifications">No notifications</p>
+      <% } else { %>
+        <% notifications.forEach(notification => { %>
+          <div class="notification-item <%= notification.read ? '' : 'unread' %>">
+            <p><%= notification.message %></p>
+            <small><%= new Date(notification.date).toLocaleDateString() %></small>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <div class="dashboard-content">
+      <!-- Event Categories -->
+      <div class="event-categories">
+        <div class="category-tabs">
+          <button class="tab-btn active" data-tab="upcoming">Upcoming Events</button>
+          <button class="tab-btn" data-tab="ongoing">Ongoing Events</button>
+          <button class="tab-btn" data-tab="finished">Past Events</button>
+          <button class="tab-btn" data-tab="my-bookings">My Bookings</button>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="tab-content active" id="upcoming-events">
+          <div class="events-grid">
+            <% upcomingEvents.forEach(event => { %>
+              <div class="event-card">
+                <div class="event-image">
+                  <% if (event.image) { %>
+                    <img src="/uploads/<%= event.image %>" alt="<%= event.name %>">
+                  <% } else { %>
+                    <div class="no-image">No image</div>
+                  <% } %>
+                </div>
+                <div class="event-details">
+                  <h3><%= event.name %></h3>
+                  <p class="event-info">📅 <%= event.date %> | ⏰ <%= event.time %></p>
+                  <p class="event-info">📍 <%= event.location %></p>
+                  <p class="event-capacity">Available Slots: <%= event.capacity - event.registeredUsers.length %></p>
+                  <button onclick="bookEvent('<%= event._id %>')" 
+                          class="btn btn-book" 
+                          <%= (event.capacity <= event.registeredUsers.length) ? 'disabled' : '' %>>
+                    <%= (event.capacity <= event.registeredUsers.length) ? 'Fully Booked' : 'Book Now' %>
+                  </button>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Ongoing Events -->
+        <div class="tab-content" id="ongoing-events">
+          <div class="events-grid">
+            <% ongoingEvents.forEach(event => { %>
+              <div class="event-card">
+                <div class="event-image">
+                  <% if (event.image) { %>
+                    <img src="/uploads/<%= event.image %>" alt="<%= event.name %>">
+                  <% } else { %>
+                    <div class="no-image">No image</div>
+                  <% } %>
+                </div>
+                <div class="event-details">
+                  <h3><%= event.name %></h3>
+                  <p class="event-info">📅 <%= event.date %> | ⏰ <%= event.time %></p>
+                  <p class="event-info">📍 <%= event.location %></p>
+                  <div class="event-status ongoing">In Progress</div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Past Events -->
+        <div class="tab-content" id="finished-events">
+          <div class="events-grid">
+            <% finishedEvents.forEach(event => { %>
+              <div class="event-card finished">
+                <div class="event-image">
+                  <% if (event.image) { %>
+                    <img src="/uploads/<%= event.image %>" alt="<%= event.name %>">
+                  <% } else { %>
+                    <div class="no-image">No image</div>
+                  <% } %>
+                </div>
+                <div class="event-details">
+                  <h3><%= event.name %></h3>
+                  <p class="event-info">📅 <%= event.date %> | ⏰ <%= event.time %></p>
+                  <p class="event-info">📍 <%= event.location %></p>
+                  <div class="event-status finished">Event Completed</div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- My Bookings -->
+        <div class="tab-content" id="my-bookings">
+          <div class="bookings-list">
+            <% userBookings.forEach(booking => { %>
+              <div class="booking-card <%= booking.status %>">
+                <div class="booking-details">
+                  <h3><%= booking.event.name %></h3>
+                  <p class="booking-info">📅 <%= booking.event.date %> | ⏰ <%= booking.event.time %></p>
+                  <p class="booking-info">📍 <%= booking.event.location %></p>
+                  <p class="booking-status">Status: <%= booking.status %></p>
+                  <p class="booking-date">Booked on: <%= new Date(booking.bookingDate).toLocaleDateString() %></p>
+                </div>
+                <% if (booking.status === 'pending') { %>
+                  <button onclick="cancelBooking('<%= booking.event._id %>')" class="btn btn-cancel">Cancel Booking</button>
+                <% } %>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from all tabs and contents
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        // Add active class to clicked tab and corresponding content
+        button.classList.add('active');
+        document.getElementById(button.dataset.tab + '-events').classList.add('active');
+      });
+    });
+
+    // Toggle notifications panel
+    function toggleNotifications() {
+      const panel = document.querySelector('.notifications-panel');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      
+      if (panel.style.display === 'block') {
+        fetch('/notifications/mark-read', { method: 'POST' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              document.querySelector('.notification-count').textContent = '0';
+            }
+          });
+      }
+    }
+
+    // Book event
+    function bookEvent(eventId) {
+      fetch('/events/book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ eventId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Booking request submitted successfully!');
+          location.reload();
+        } else {
+          alert(data.message || 'Failed to book event');
+        }
+      });
+    }
+
+    // Cancel booking
+    function cancelBooking(eventId) {
+      if (confirm('Are you sure you want to cancel this booking?')) {
+        fetch('/events/cancel-booking', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ eventId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Failed to cancel booking');
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

@@ -2,23 +2,174 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add Event</title>
+  <title><%= event ? 'Edit Event' : 'Create New Event' %></title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Add New Event</h1>
-    <form action="/add" method="POST" enctype="multipart/form-data">
-      <input type="text" name="name" placeholder="Event Name" required />
-      <input type="text" name="date" placeholder="Date (YYYY-MM-DD)" required />
-      <input type="text" name="time" placeholder="Time" required />
-      <input type="text" name="location" placeholder="Location" required />
-      <textarea name="description" placeholder="Description (optional)"></textarea>
-      <input type="file" name="image" accept="image/*" />
-      <button type="submit">Add Event</button>
-    </form>
-    <br />
-    <a href="/">⬅ Back to Dashboard</a>
+  <div class="dashboard-container">
+    <nav class="dashboard-nav">
+      <h1><%= event ? 'Edit Event' : 'Create New Event' %></h1>
+      <div class="user-info">
+        <span>Welcome, <%= user.username %></span>
+        <a href="/admin/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+      </div>
+    </nav>
+
+    <div class="dashboard-content">
+      <form class="event-form" action="<%= event ? `/events/update/${event._id}` : '/events/create' %>" method="POST" enctype="multipart/form-data">
+        <% if (event) { %>
+          <input type="hidden" name="_method" value="PUT">
+        <% } %>
+
+        <div class="form-group">
+          <label for="name">Event Name</label>
+          <input type="text" id="name" name="name" value="<%= event ? event.name : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input type="date" id="date" name="date" value="<%= event ? event.date : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="time">Time</label>
+          <input type="time" id="time" name="time" value="<%= event ? event.time : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input type="text" id="location" name="location" value="<%= event ? event.location : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="capacity">Capacity</label>
+          <input type="number" id="capacity" name="capacity" value="<%= event ? event.capacity : '' %>" required min="1">
+        </div>
+
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status" required>
+            <option value="upcoming" <%= event && event.status === 'upcoming' ? 'selected' : '' %>>Upcoming</option>
+            <option value="ongoing" <%= event && event.status === 'ongoing' ? 'selected' : '' %>>Ongoing</option>
+            <option value="finished" <%= event && event.status === 'finished' ? 'selected' : '' %>>Finished</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="4"><%= event ? event.description : '' %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Event Image</label>
+          <% if (event && event.image) { %>
+            <div class="current-image">
+              <img src="/uploads/<%= event.image %>" alt="Current event image">
+              <p>Current image: <%= event.image %></p>
+            </div>
+          <% } %>
+          <input type="file" id="image" name="image" accept="image/*">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary"><%= event ? 'Update Event' : 'Create Event' %></button>
+          <a href="/admin/dashboard" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
   </div>
+
+  <style>
+    .event-form {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .current-image {
+      margin: 1rem 0;
+    }
+
+    .current-image img {
+      max-width: 200px;
+      border-radius: 4px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn-secondary {
+      background-color: #95a5a6;
+      color: white;
+      text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+      background-color: #7f8c8d;
+    }
+  </style>
+
+  <script>
+    // Form validation
+    document.querySelector('.event-form').addEventListener('submit', (e) => {
+      const capacity = document.getElementById('capacity').value;
+      if (capacity < 1) {
+        e.preventDefault();
+        alert('Capacity must be at least 1');
+      }
+    });
+
+    // Image preview
+    document.getElementById('image').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const currentImage = document.querySelector('.current-image');
+          if (currentImage) {
+            currentImage.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+          } else {
+            const preview = document.createElement('div');
+            preview.className = 'current-image';
+            preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            document.getElementById('image').parentNode.insertBefore(preview, document.getElementById('image').nextSibling);
+          }
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
 </body>
 </html>

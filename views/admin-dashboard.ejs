@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="dashboard-nav">
+      <h1>Admin Dashboard</h1>
+      <div class="user-info">
+        <span>Welcome, <%= user.username %></span>
+        <a href="/logout" class="logout-btn">Logout</a>
+      </div>
+    </nav>
+
+    <div class="dashboard-content">
+      <div class="action-bar">
+        <a href="/events/add" class="btn btn-primary">➕ Create New Event</a>
+      </div>
+
+      <div class="events-section">
+        <h2>Manage Events</h2>
+        <div class="event-filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+          <button class="filter-btn" data-filter="ongoing">Ongoing</button>
+          <button class="filter-btn" data-filter="finished">Finished</button>
+        </div>
+
+        <table class="events-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Capacity</th>
+              <th>Registered</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% events.forEach(event => { %>
+              <tr class="event-row <%= event.status %>">
+                <td class="event-image">
+                  <% if (event.image) { %>
+                    <img src="/uploads/<%= event.image %>" alt="<%= event.name %>">
+                  <% } else { %>
+                    <div class="no-image">No image</div>
+                  <% } %>
+                </td>
+                <td><%= event.name %></td>
+                <td><%= event.date %></td>
+                <td><%= event.time %></td>
+                <td><%= event.location %></td>
+                <td>
+                  <span class="status-badge <%= event.status %>"><%= event.status %></span>
+                </td>
+                <td><%= event.capacity %></td>
+                <td><%= event.registeredUsers.length %></td>
+                <td class="actions">
+                  <a href="/events/edit/<%= event._id %>" class="btn btn-edit">✏️ Edit</a>
+                  <a href="/events/registrations/<%= event._id %>" class="btn btn-view">👥 View Registrations</a>
+                  <button onclick="deleteEvent('<%= event._id %>')" class="btn btn-delete">🗑️ Delete</button>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pending-registrations">
+        <h2>Pending Registrations</h2>
+        <table class="registrations-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>User</th>
+              <th>Booking Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% pendingRegistrations.forEach(registration => { %>
+              <tr>
+                <td><%= registration.event.name %></td>
+                <td><%= registration.user.username %></td>
+                <td><%= new Date(registration.bookingDate).toLocaleDateString() %></td>
+                <td class="actions">
+                  <button onclick="approveRegistration('<%= registration.event._id %>', '<%= registration.user._id %>')" class="btn btn-approve">✓ Approve</button>
+                  <button onclick="rejectRegistration('<%= registration.event._id %>', '<%= registration.user._id %>')" class="btn btn-reject">✗ Reject</button>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Filter events
+    document.querySelectorAll('.filter-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        document.querySelectorAll('.event-row').forEach(row => {
+          if (filter === 'all' || row.classList.contains(filter)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Handle event deletion
+    function deleteEvent(eventId) {
+      if (confirm('Are you sure you want to delete this event?')) {
+        fetch(`/events/delete/${eventId}`, { method: 'DELETE' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              location.reload();
+            } else {
+              alert('Failed to delete event');
+            }
+          });
+      }
+    }
+
+    // Handle registration approval/rejection
+    function approveRegistration(eventId, userId) {
+      updateRegistrationStatus(eventId, userId, 'confirmed');
+    }
+
+    function rejectRegistration(eventId, userId) {
+      updateRegistrationStatus(eventId, userId, 'cancelled');
+    }
+
+    function updateRegistrationStatus(eventId, userId, status) {
+      fetch('/events/registration-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ eventId, userId, status })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert('Failed to update registration status');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
